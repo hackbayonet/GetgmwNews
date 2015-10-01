@@ -119,3 +119,4 @@ if __name__ == '__main__':
                 continue
             news = replace(news)
             file.write(news)
+            
