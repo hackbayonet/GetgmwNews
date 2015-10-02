@@ -102,10 +102,10 @@ def GetNews(url):
     ''' 获取新闻内容 '''
     html = GetHtml(url)
     news = re.findall('<!--enpcontent-->(.*?)<!--/enpcontent-->',html, re.S)
-    print newurl[0] + newurl[1]
     if lock.acquire():
+        print newurl[0] + newurl[1]
         file.write(replace(news[0]))
-    lock.release()
+        lock.release()
 
 if __name__ == '__main__':
     for url in urls:
