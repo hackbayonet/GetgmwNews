@@ -4,6 +4,7 @@
 import urllib2
 import re
 import time
+import thread
 
 # 初始化 headers
 user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0'
@@ -12,6 +13,10 @@ headers = {'User_agent':user_agent}
 IndexUrls = []
 # 初始化新闻url存放地址
 NewUrls = []
+# 获取当前年月日
+currenttime = time.strftime('%Y-%m-%d', time.localtime())
+# 初始化文件存放地址
+file = open(currenttime + '.txt', 'w')
 # 初始化全站新闻
 urls = [
         ['http://guancha.gmw.cn/node_10056.htm', 'http://guancha.gmw.cn/'],
@@ -89,10 +94,19 @@ def GetNewUrls(html, url):
             if not re.search('node', newurl[0], re.S):
                 NewUrls.append([url,newurl[0],newurl[1]])
 
-def GetNews(html):
-        #获取新闻内容
-        news = re.findall('<!--enpcontent-->(.*?)<!--/enpcontent-->',html, re.S)
-        return replace(news[0])
+
+
+import threading
+lock = threading.Lock()
+def GetNews(url):
+    ''' 获取新闻内容 '''
+    html = GetHtml(url)
+    news = re.findall('<!--enpcontent-->(.*?)<!--/enpcontent-->',html, re.S)
+    print newurl[0] + newurl[1]
+    if lock.acquire():
+        file.write(replace(news[0]))
+    lock.release()
+
 if __name__ == '__main__':
     for url in urls:
         html = GetHtml(url[0])
@@ -106,16 +120,18 @@ if __name__ == '__main__':
                 print u'获取HTML失败!'
                 continue
             GetNewUrls(html, url[1])
-    # 获取当前年月日
-    currenttime = time.strftime('%Y-%m-%d', time.localtime())
-    file = open(currenttime + '.txt', 'w')
+    threads = []
     for newurl in NewUrls:
         if newurl[2] == currenttime:
-            news = GetNews(GetHtml(newurl[0] + newurl[1]))
-            print newurl[0] + newurl[1]
-            if not html:
-                print u'获取HTML失败!'
-                continue
-            news = replace(news)
-            file.write(news)
-            
+            url = newurl[0] + newurl[1]
+            t1 = threading.Thread(target=GetNews,args=(url,))
+            threads.append(t1)
+
+    for th in threads:
+        th.start()
+
+    for th in threads:
+        th.join()
+
+    file.close()
+    print "OK"
