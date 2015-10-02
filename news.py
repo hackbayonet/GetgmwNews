@@ -1,5 +1,4 @@
-﻿# -*- coding: gb2312 -*-
-# Test GitHub
+﻿# -*- coding: utf-8 -*-
 # python 2.7.10
 
 import urllib2
@@ -109,7 +108,7 @@ if __name__ == '__main__':
             GetNewUrls(html, url[1])
     # 获取当前年月日
     currenttime = time.strftime('%Y-%m-%d', time.localtime())
-    file = open(currenttime, 'w')
+    file = open(currenttime + '.txt', 'w')
     for newurl in NewUrls:
         if newurl[2] == currenttime:
             news = GetNews(GetHtml(newurl[0] + newurl[1]))
