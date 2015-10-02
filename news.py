@@ -102,9 +102,13 @@ def GetNews(url):
     ''' 获取新闻内容 '''
     html = GetHtml(url)
     news = re.findall('<!--enpcontent-->(.*?)<!--/enpcontent-->',html, re.S)
+    # 调用acquire([timeout])时，线程将一直阻塞，
+    # 直到获得锁定或者直到timeout秒后（timeout参数可选）。
+    # 返回是否获得锁。
     if lock.acquire():
         print newurl[0] + newurl[1]
         file.write(replace(news[0]))
+        # 调用release()将释放锁。
         lock.release()
 
 if __name__ == '__main__':
