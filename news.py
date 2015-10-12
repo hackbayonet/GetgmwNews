@@ -1,10 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # python 2.7.10
 
 import urllib2
 import re
 import time
-import thread
 
 # 初始化 headers
 user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0'
@@ -16,7 +15,7 @@ NewUrls = []
 # 获取当前年月日
 currenttime = time.strftime('%Y-%m-%d', time.localtime())
 # 初始化文件存放地址
-file = open(currenttime + '.txt', 'w')
+file = open('/home/bayonet/News/' + currenttime + '.txt', 'w')
 # 初始化全站新闻
 urls = [
         ['http://guancha.gmw.cn/node_10056.htm', 'http://guancha.gmw.cn/'],
@@ -82,8 +81,8 @@ def GetIndexUrls(html):
     for indexurl in indexurls:
         if not re.search('http://', indexurl[0], re.S):
             if not re.search('target=', indexurl[0], re.S):
-                print indexurl[0], indexurl[1].decode('utf-8').encode('gbk')
-                IndexUrls.append([indexurl[0], indexurl[1].decode('utf-8').encode('gbk')]) 
+                print indexurl[0], indexurl[1]
+                IndexUrls.append([indexurl[0], indexurl[1]])
 
 
 def GetNewUrls(html, url):
@@ -94,22 +93,13 @@ def GetNewUrls(html, url):
             if not re.search('node', newurl[0], re.S):
                 NewUrls.append([url,newurl[0],newurl[1]])
 
-
-
-import threading
-lock = threading.Lock()
 def GetNews(url):
     ''' 获取新闻内容 '''
     html = GetHtml(url)
     news = re.findall('<!--enpcontent-->(.*?)<!--/enpcontent-->',html, re.S)
-    # 调用acquire([timeout])时，线程将一直阻塞，
-    # 直到获得锁定或者直到timeout秒后（timeout参数可选）。
-    # 返回是否获得锁。
-    if lock.acquire():
-        print newurl[0] + newurl[1]
-        file.write(replace(news[0]))
-        # 调用release()将释放锁。
-        lock.release()
+    print newurl[0] + newurl[1]
+    file.write(replace(news[0]))
+    # 调用release()将释放锁。
 
 if __name__ == '__main__':
     for url in urls:
@@ -124,18 +114,11 @@ if __name__ == '__main__':
                 print u'获取HTML失败!'
                 continue
             GetNewUrls(html, url[1])
-    threads = []
+
     for newurl in NewUrls:
         if newurl[2] == currenttime:
             url = newurl[0] + newurl[1]
-            t1 = threading.Thread(target=GetNews,args=(url,))
-            threads.append(t1)
-
-    for th in threads:
-        th.start()
-
-    for th in threads:
-        th.join()
+            GetNews(url)
 
     file.close()
     print "OK"
